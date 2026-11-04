@@ -1,0 +1,24 @@
+id = "hurka.serial-monitor"
+name = "Serial Monitor"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "Arduino IDE-style serial monitor pane powered by serial-broker (never opens devices directly)"
+platforms = ["linux"]
+
+[[actions]]
+id = "open"
+title = "Serial Monitor: open"
+contexts = ["workspace", "pane"]
+command = ["python3", "serial_monitor.py", "open"]
+
+[[actions]]
+id = "close"
+title = "Serial Monitor: close"
+contexts = ["workspace", "pane"]
+command = ["python3", "serial_monitor.py", "close"]
+
+[[panes]]
+id = "monitor"
+title = "Serial Monitor"
+placement = "tab"
+command = ["python3", "serial_monitor.py"]
