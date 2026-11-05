@@ -1,0 +1,4 @@
+/bin/
+/serial-broker
+/serial
+*.log

@@ -1,0 +1,12 @@
+[Unit]
+Description=Serial port broker — one owner, many readers
+# See README.md. Logs go to stderr, i.e. `journalctl --user -u serial-broker`.
+
+[Service]
+ExecStart=%h/.local/bin/serial-broker
+Restart=on-failure
+# XDG_RUNTIME_DIR is set by the user manager, so the socket lands in
+# $XDG_RUNTIME_DIR/serial-broker.sock automatically.
+
+[Install]
+WantedBy=default.target
