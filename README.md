@@ -1,34 +1,58 @@
+<div align="center">
+
 # herdr Serial Monitor
 
-Serial monitor panel for herdr-app on Linux.
+**Serial monitor panel for herdr-app on Linux.**
 
-## Folder structure
+![platform](https://img.shields.io/badge/platform-Linux-646CFF)
+![python](https://img.shields.io/badge/python-3.9%2B-3776AB)
+![herdr-app](https://img.shields.io/badge/for-herdr--app-8E75B2)
 
-| Path | What it is |
-|---|---|
-| `herdr-app/serial-monitor/` | the panel (`main.js` state, `ui.js` layout, `transport.js` broker access) |
-| `herdr-app/tabs-sm/` | the Serial tab-bar button |
-| `herdr-app/main-sm.layout.json` | example layout with the panel docked |
-| `serial-broker/` | background tool that owns the serial ports (Python) |
-| `tools/patch_layout.py` | docks the panel into your layout |
-| `Makefile` | install / uninstall / test |
+</div>
 
-## Requirements
+---
+
+## 📁 Folder structure
+
+```text
+herdr-serial-monitor/
+├── herdr-app/
+│   ├── serial-monitor/          the panel
+│   │   ├── main.js              state and wiring
+│   │   ├── ui.js                element builders
+│   │   └── transport.js         broker access
+│   ├── tabs-sm/                 the tab-bar Serial button
+│   └── main-sm.layout.json      example layout with the panel docked
+├── serial-broker/               the port-owning tool
+│   ├── serialbroker/            daemon, CLI, API, logs
+│   └── tests/                   unit + PTY integration tests
+├── tools/
+│   └── patch_layout.py          docks the panel into your layout
+└── Makefile                     install / uninstall / test
+```
+
+## 📦 Requirements
 
 - herdr-app
 - python3
 
-## Install
+## 🚀 Install
 
-    make check      # what is present / missing
-    make install    # builds the `serial` port tool (if not already
-                    # installed) + the panel
-    make uninstall
+```sh
+make check      # what is present / missing
+make install    # port tool (if missing) + panel
+make uninstall
+```
 
-## Technologies
+## 🛠 Technologies
 
-JavaScript (gpui-kit), Python, Make.
+| Piece | Built with |
+|---|---|
+| Panel + tab-bar button | JavaScript (gpui-kit / GPUI) |
+| Port tool | Python (stdlib only) |
+| Installer | Make + Python |
 
-## Contributing
+## 🤝 Contributing
 
-Edit, `make install-app` to test, pull requests welcome.
+Edit, `make install-app` to test — herdr-app hot-reloads mods on save.
+Run the tool's tests with `make test`. Pull requests welcome.
