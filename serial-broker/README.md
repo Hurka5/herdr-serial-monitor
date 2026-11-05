@@ -75,18 +75,20 @@ Then even a shell command from an AI cannot steal bytes from the port.
 
 ## Status
 
-Implemented. Layout:
+Implemented in Python (stdlib only). Layout:
 
-    cmd/serial-broker/   daemon
-    cmd/serial/          CLI
-    internal/broker/     port ownership, discovery, logs
-    internal/api/        unix-socket JSON API
-    packaging/           systemd user unit
+    serialbroker/broker.py    port ownership, discovery, logs
+    serialbroker/port.py      exclusive open (TIOCEXCL), raw mode, framing
+    serialbroker/seriallog.py append-only per-port log with cursors
+    serialbroker/api.py       unix-socket JSON API + client
+    serialbroker/cli.py       the `serial` CLI
+    serialbroker/daemon.py    service entry point
+    tests/                    unit + PTY integration tests
+    packaging/                systemd user unit
 
 ## Install
 
-    go build -o ~/.local/bin/serial-broker ./cmd/serial-broker && go build -o ~/.local/bin/serial ./cmd/serial
-    cp packaging/serial-broker.service ~/.config/systemd/user/
-    systemctl --user daemon-reload && systemctl --user enable --now serial-broker
+From the repo root: `make install-broker`.
+Run the tests: `PYTHONPATH=. python3 -m unittest discover -s tests`
 
 The CLI talks to the same socket (`$XDG_RUNTIME_DIR/serial-broker.sock`); `journalctl --user -u serial-broker -f` follows the daemon.
