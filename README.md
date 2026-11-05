@@ -1,73 +1,52 @@
 # herdr Serial Monitor
 
-An Arduino IDE-style serial monitor with two frontends, both talking **only**
-to [serial-broker] — neither ever opens a serial device itself (the broker
-owns every port exclusively; a direct open would steal bytes and reset most
-boards via USB CDC DTR). Watch a port here while an agent in another pane
-reads or flashes the same port.
-
-## What lives where
-
-| Piece | Source (this repo) | Installed (live) |
-|---|---|---|
-| herdr-app GUI panel | `herdr-app/serial-monitor/` | `~/.config/herdr-app/mods/serial-monitor/` |
-| Serial tab-bar button (cloned tabs mod) | `herdr-app/tabs-sm/` | `~/.config/herdr-app/mods/tabs-sm/` |
-| Layout patcher (any machine) | `tools/patch_layout.py` | writes `~/.config/herdr-app/layouts/main-sm.json` |
-| terminal-herdr TUI plugin | `serial_monitor.py` + `herdr-plugin.toml` | linked via `herdr plugin link` |
-
-## Install (any computer)
-
-```sh
-make check      # what's present, what's missing
-make install    # broker (builds ../serial-broker if the CLI is missing) + GUI panel + TUI
-```
-
-Every step is guarded and idempotent: the broker is only built when the
-`serial` CLI is absent, the layout is only created when missing (patched from
-*that machine's* main layout — your sizes survive), and re-running never
-clobbers. Without python3 the panel still auto-docks at next app start; the
-tab-bar Serial button needs the layout patch. `make uninstall` removes
-everything but the broker; `make uninstall-broker` removes that too.
-
-Install/update just the GUI panel while the app is open: `make install-app`
-(herdr-app hot-reloads mods on save).
-
-## GUI panel (herdr-app)
-
-Docked right beside Files/Changes, always there, toggled by the **Serial**
-button in the tab bar. Port / baud / line-ending dropdowns, input + Send
-(Follow pins to the newest line; turn it off to browse with the scrollbar),
-Time = timestamps, Clear = empty the view (broker log keeps everything).
-
-Preferences (port, ending, timestamps) persist in
-`~/.config/herdr-app/data/serial-monitor/store.json`; output is tailed from
-the broker's per-port logs (`~/.local/share/serial-broker/logs/`) via
-`watchFolder` — no polling loops, no process spawns.
-
-If the panel ever disappears from the layout: `herdr-app do layout.switch
---name main-sm`, or re-add the block: `herdr-app do layout.set --layout
-"$(cat herdr-app/main-sm.layout.json)"`.
-
-## Terminal TUI (herdr multiplexer)
-
-Install: `herdr plugin link ~/Projektek/herdr-serial-monitor`, then `prefix+s`
-(keybinding in `~/.config/herdr/config.toml`) or the command palette.
-
-| Key | Action | Key | Action |
-|-----|--------|-----|--------|
-| `Enter` | send input line | `^B` | cycle baud (persists via `serial set`) |
-| `^E` | cycle line ending | `^P` | cycle port |
-| `^T` | timestamps | `^G` | load recent history from the broker log |
-| `^L` | clear | `^R` | rescan ports |
-| `PgUp`/`PgDn` | scroll | `End` | back to live |
+Arduino IDE-style serial monitor for herdr-app, plus a matching TUI for the
+terminal herdr multiplexer. All I/O goes through serial-broker — devices are
+never opened directly, so this panel, agents, and flashers can share ports.
 
 ## Requirements
 
-- serial-broker daemon + the `serial` CLI on PATH (`systemctl --user status
-  serial-broker`; enabled = starts at login)
-- herdr-app (GUI) — Python 3.8+ only needed for the terminal TUI
+- herdr-app (GUI panel) and/or herdr (TUI)
+- serial-broker with its `serial` CLI on PATH — separate project, expected as
+  a sibling checkout at `../serial-broker` if the CLI is missing
+  (override with `SERIAL_BROKER_SRC=/path`)
+- python3 >= 3.8 (TUI, layout patch)
+- go (only to build serial-broker from source)
+- Linux (systemd user service; owns /dev/ttyACM* and /dev/ttyUSB*)
 
-If output is silent, the #1 cause is a wrong baud rate — check the project's
-`Serial.begin(...)` / `monitor_speed` / `sdkconfig` first.
+## Install
 
-[serial-broker]: local daemon on this machine; see `systemctl --user status serial-broker`
+    make check      # report what is present / missing
+    make install    # broker (only if missing) + GUI panel + TUI plugin
+
+Idempotent: re-running never clobbers a working setup. The layout is patched
+from the target machine's own main layout, so personal sizes survive.
+
+    make uninstall          # remove mods, layout, TUI link (keeps broker)
+    make uninstall-broker   # also remove serial-broker
+
+## Folder structure
+
+    herdr-app/serial-monitor/   GUI panel mod (JavaScript, gpui-kit)
+    herdr-app/tabs-sm/          "Serial" tab-bar button (cloned tabs mod)
+    herdr-app/main-sm.layout.json   reference layout for this feature set
+    tools/patch_layout.py       inserts the panel into any machine's layout
+    serial_monitor.py           terminal-herdr TUI (python curses)
+    herdr-plugin.toml           herdr plugin manifest for the TUI
+    smoke_test.py               TUI smoke test
+    Makefile                    installer
+
+## Technologies
+
+- JavaScript (gpui-kit / GPUI) — herdr-app mods
+- Python 3 (curses TUI, installer helpers)
+- Make
+- Go — serial-broker (separate project, not included)
+
+## Contributing
+
+Clone, edit, then `make install-app` to test — herdr-app hot-reloads mods on
+save. Run `python3 smoke_test.py` for TUI changes (it never transmits to
+attached devices). Pull requests welcome: keep the mod logic in
+`herdr-app/serial-monitor/main.js`, the button in `herdr-app/tabs-sm/`, and
+update `tools/patch_layout.py` if the layout block changes.
