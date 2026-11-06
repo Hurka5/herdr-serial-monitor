@@ -3,12 +3,10 @@ import { div } from "gpui-kit";
 import { v_flex, h_flex, Input, Scrollbar, v_virtual_list } from "gpui-base";
 
 export function header(t, view) {
-  const { meta, latency } = view;
+  const { meta } = view;
   return h_flex().h(42).flex_none().px(12).gap(8).items_center().border_b(1).border_color(t.border)
     .child(statusDot(t, meta))
     .child(div().font_semibold().child("Serial Monitor"))
-    .when(latency !== null, (e) => e.child(div().flex_none().text_size(10).text_color(t.dim)
-      .child(`${latency}ms`)))
     .child(div().flex_1())
     .child(pill("sm-ts", "Time", view.timestamps, t, view.onToggleTimestamps))
     .child(pill("sm-follow", "Follow", view.follow, t, view.onToggleFollow))
